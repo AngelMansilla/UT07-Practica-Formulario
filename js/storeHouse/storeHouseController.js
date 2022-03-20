@@ -75,20 +75,36 @@ class StoreHouseController {
   }
 
   onInit = () => {
-    this.#storeHouseView.showCategories(this.#storeHouseModel.categories);
-    this.#storeHouseView.showStores(this.#storeHouseModel.stores);
-    this.#storeHouseView.bindProductsCategoryList(this.handleProductsCategoryList);
-    this.#storeHouseView.bindProductsStoreList(this.handleProductsStoreList);
+    this.onAddCategory();
+    this.onAddStore();
     this.#storeHouseView.bindCloseProductInNewWindow();
   }
+
+  onLoad = () => {
+    this.#loadStoreHouseObjects();
+    this.#storeHouseView.showAdministracion();
+    this.#storeHouseView.bindAdministracionMenu(
+      this.handleNewCategoryForm,
+      this.handleRemoveCategoryForm
+    );
+  }
+
+
+  onAddCategory = () => {
+    this.#storeHouseView.showCategories(this.#storeHouseModel.categories);
+    this.#storeHouseView.bindProductsCategoryList(this.handleProductsCategoryList);
+  }
+
+  onAddStore = () => {
+    this.#storeHouseView.showStores(this.#storeHouseModel.stores);
+    this.#storeHouseView.bindProductsStoreList(this.handleProductsStoreList);
+  }
+
 
   handleInit = () => {
     this.onInit();
   }
 
-  onLoad = () => {
-    this.#loadStoreHouseObjects();
-  }
 
   handleProductsCategoryList = (title) => {
     let category = this.#storeHouseModel.getCategory(title);
@@ -156,6 +172,47 @@ class StoreHouseController {
       this.#storeHouseView.showProductInNewWindow(null, 'No existe este producto en la página.');
     }
   }
+
+  handleNewCategoryForm = () => {
+    this.#storeHouseView.showNewCategoryForm();
+    this.#storeHouseView.bindNewCategoryForm(this.handleCreateCategory);
+  }
+
+  handleCreateCategory = (title, desc) => {
+    let cat = new Category(title);
+    cat.description = desc;
+
+    let done = false;
+    let error;
+    try {
+      this.#storeHouseModel.addCategory(cat);
+      done = true;
+      this.onAddCategory();
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showNewCategoryModal(done, cat, error);
+  }
+
+  handleRemoveCategoryForm = () => {
+    this.#storeHouseView.showRemoveCategoryForm(this.#storeHouseModel.categories);
+    this.#storeHouseView.bindRemoveCategoryForm(this.handleRemoveCategory);
+  }
+
+  handleRemoveCategory = (title) => {
+    let done, error, cat;
+    try {
+      cat = this.#storeHouseModel.getCategory(title);
+      this.#storeHouseModel.removeCategory(cat);
+      done = true;
+      this.onAddCategory();
+    } catch (exception) {
+      done = false;
+      error = exception;
+    }
+    this.#storeHouseView.showRemoveCategoryModal(done, cat, error);
+  }
+
 
 }
 

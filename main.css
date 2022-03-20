@@ -28,10 +28,28 @@
    width: 200px;
  }
 
-.main__header{
-  display:flex;
-  justify-content: space-between;
-  margin-left: 10%;
-  margin-right: 10%;
-  margin-top:2%;
-}
+ .main__header {
+   display: flex;
+   justify-content: space-between;
+   margin-left: 10%;
+   margin-right: 10%;
+   margin-top: 2%;
+ }
+
+ .new-category {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin-top: 2%;
+   margin-bottom: 2%;
+ }
+
+ .formNewCategory div {
+   justify-content: center;
+   align-items: center;
+   text-align: center;
+   flex-direction: column;
+   margin-bottom: 5%;
+ }
+
