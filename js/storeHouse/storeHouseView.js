@@ -1,6 +1,6 @@
 "use strict";
 import StoreHouse from './storeHouseModel.js';
-import { showFeedBack, defaultCheckElement, newCategoryValidation } from './validation.js';
+import { showFeedBack, defaultCheckElement, newCategoryValidation, newStoreValidation } from './validation.js';
 
 
 class StoreHouseView {
@@ -25,7 +25,7 @@ class StoreHouseView {
   //Mostrar las tiendas tanto en el menu como en el main
   showStores(_stores) {
     this.main.empty();
-    if (this.stores.children().length > 1)
+    if (this.stores.children().length > 0)
       this.stores.children().remove();
     let container = `<section class="stores" id="container_stores">`;
     for (let store of _stores) {
@@ -38,7 +38,7 @@ class StoreHouseView {
   }
 
   showCategories(_categories) {
-    if (this.categories.children().length > 1)
+    if (this.categories.children().length > 0)
       this.categories.children().remove();
     for (let category of _categories) {
       this.categories.append(`<a data-category="${category.title}" class='dropdown-item' href='#product-list-category'>${category.title}</a>`);
@@ -179,7 +179,7 @@ class StoreHouseView {
   }
 
 
-    showAdministracion() {
+  showAdministracion() {
     let li = $(`
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Administración</a>
@@ -187,13 +187,13 @@ class StoreHouseView {
     `);
     let container = $(`
     <ul class="dropdown-menu" id="management">
-      <a id="newCategory" class="dropdown-item" href="#newcategory">Crear categoría</a>
-      <a id="delCategory" class="dropdown-item" href="#delcategory">Eliminar categoría</a>
-      <a id="newProduct" class="dropdown-item" href="#newproduct">Crear producto</a>
-      <a id="delProduct" class="dropdown-item" href="#delproduct">Eliminar producto</a>
-      <a id="newStore" class="dropdown-item" href="#newstore">Crear tienda</a>
-      <a id="delStore" class="dropdown-item" href="#delstore">Eliminar tienda</a>
-      <a id="modStock" class="dropdown-item" href="#modstock">Modificar stock</a>
+      <a id="newCategory" class="dropdown-item" href="#newCategory">Crear categoría</a>
+      <a id="delCategory" class="dropdown-item" href="#removeCategory">Eliminar categoría</a>
+      <a id="newStore" class="dropdown-item" href="#newStore">Crear tienda</a>
+      <a id="delStore" class="dropdown-item" href="#removeStore">Eliminar tienda</a>
+      <a id="newProduct" class="dropdown-item" href="#newProduct">Crear producto</a>
+      <a id="delProduct" class="dropdown-item" href="#removeProduct">Eliminar producto</a>
+      <a id="modStock" class="dropdown-item" href="#modStock">Modificar stock</a>
     </ul>
     `);
     li.append(container);
@@ -207,29 +207,30 @@ class StoreHouseView {
       <h1>Nueva categoría</h1>
       <form name="formNewCategory" class="formNewCategory" id="formNewCategory" novalidate>
         <div>
-            <label for="title">Título *</label>
-            <div class="input-group">
-              <input type="text" class="formcontrol" id="title" name="title" placeholder="Título de categoría" value="" required>
-              <div class="invalid-feedback">El título es obligatorio.</div>
-              <div class="valid-feedback">Correcto.</div>
-            </div>
+          <label for="title">Título *</label>
+          <div class="input-group">
+            <input type="text" id="title" name="title" placeholder="Título de categoría" value="" required>
+            <div class="invalid-feedback">El título es obligatorio.</div>
+            <div class="valid-feedback">Correcto.</div>
+          </div>
         </div>
         <div>
-            <label for="description">Descripción </label>
-            <div class="input-group">
-              <input type="text" class="formcontrol" id="description" name="description" placeholder="Descripcion de categoría" value="">
-              <div class="invalid-feedback"></div>
-              <div class="valid-feedback">Correcto.</div>
-            </div>
-          <button class="btn btn-primary" type="submit">Añadir</button>
-          <button class="btn btn-primary" type="reset" id="reset">Resetear</button>
+          <label for="description">Descripción </label>
+          <div class="input-group">
+            <input type="text" id="description" name="description" placeholder="Descripcion de categoría" value="">
+            <div class="invalid-feedback"></div>
+            <div class="valid-feedback">Correcto.</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Añadir</button>
+        <button class="btn btn-primary" type="reset" id="reset">Resetear</button>
       </form>
     </section>
     `);
     this.main.append(container);
   }
 
-  showNewCategoryModal(done, cat, error){
+  showNewCategoryModal(done, cat, error) {
     let form = $('#formNewCategory');
     form.find('.error').remove();
     if (done) {
@@ -271,13 +272,13 @@ class StoreHouseView {
     this.main.empty();
     let container = $(`
     <div id="remove-category" class="container my-3">
-			<h1 class="display-5">Eliminar una categoría categoría</h1>
+			<h1 class="display-5">Eliminar una categoría</h1>
 			<form id="formRemoveCategory" class="formRemoveCategory">
         <label for="title">Titulo de la categoría:</label>
         <select id="selCategories">
           <option></option>
         </select>
-        <input type="submit" name="Eliminar" value="Eliminar">
+        <button class="btn btn-primary" type="submit">Eliminar</button>
       <form>`);
 
     this.main.append(container);
@@ -291,7 +292,7 @@ class StoreHouseView {
   }
 
   showRemoveCategoryModal(done, cat, error) {
-    $('remove-category').find('div.error').remove();
+    $('#remove-category').find('.error').remove();
     if (done) {
       let modal = $(`<div class="modal fade" id="removeCategoryModal" tabindex="-1"
 				data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="removeCategoryModalLabel" aria-hidden="true">
@@ -321,209 +322,314 @@ class StoreHouseView {
         });
         removeCategoryModal.modal('hide');
       })
+      //Borrar de opciones la categoria borrada
+      $("option[value='" + cat.title + "']").remove();
     } else {
-      $('#removeCategoryModal').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> La categoría <strong>${cat.title}</strong> no exite.</div>`);
+      $('#remove-category').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>Debes seleccionar una categoría</div>`);
     }
   }
 
-  // showNewProductForm(categories) {
-  //   this.main.empty();
-  //   if (this.categories.children().length > 1)
-  //     this.categories.children()[1].remove();
+  showNewStoreForm() {
+    this.main.empty();
+    let container = $(`
+    <section id="new-store" class="new-store">
+      <h1>Nueva tienda</h1>
+      <form name="formNewStore" class="formNewStore" id="formNewStore" novalidate>
+        <div class="row">
+          <div class="col">
+              <label for="CIF">CIF *</label>
+              <div class="input-group">
+                <input type="text" id="CIF" name="CIF" placeholder="CIF de la tienda" value="" required>
+                <div class="invalid-feedback">El CIF es obligatorio.</div>
+                <div class="valid-feedback">Correcto.</div>
+              </div>
+          </div>
+          <div class="col">
+              <label for="name">Nombre *</label>
+              <div class="input-group">
+                <input type="text"  id="name" name="name" placeholder="Nombre de la tienda" value="" required>
+                <div class="invalid-feedback">El Nombre es obligatorio.</div>
+                <div class="valid-feedback">Correcto.</div>
+              </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="address">Dirección: </label>
+            <div class="input-group">
+              <input type="text" id="address" name="address" placeholder="Dirección de la tienda" value="">
+              <div class="invalid-feedback">La dirección no es válida</div>
+              <div class="valid-feedback">Correcto.</div>
+            </div>
+          </div>
+          <div class="col">
+            <label for="phone">Telefono </label>
+            <div class="input-group">
+              <input type="text" id="phone" name="phone" placeholder="Telefono de la tienda" value="">
+              <div class="invalid-feedback">Teléfono incorrecto</div>
+              <div class="valid-feedback">Correcto.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label for="coords">Coordenadas </label>
+          <div class="input-group coords">
+            <label for="coords">Latitud </label>
+            <input type="text"  id="latitud" name="latitud" placeholder="Latitud de la tienda" value="">
+            <label for="coords">Longitud </label>
+            <input type="text"  id="longitud" name="longitud" placeholder="Longitud de la tienda" value="">
+            <div class="invalid-feedback">Coordenadas incorrectas</div>
+            <div class="valid-feedback">Correcto.</div>
+          </div>
+        </div>
+        <button class="btn btn-primary justify-content: center;" type="submit">Añadir</button>
+        <button class="btn btn-primary row-auto" type="reset" id="reset">Resetear</button>
+      </form>
+    </section>
+    `);
+    this.main.append(container);
+  }
 
-  //   let container = $(`<div id="new-product" class="container my-3">
-  // 		<h1 class="display-5">Nueva producto</h1>
-  // 	</div>`);
-  //   let form = $(`<form name="fNewProduct" role="form" novalidate><form>`);
-  //   form.append(`<div class="form-row">
-  // 		<div class="col-md-12 mb-3">
-  // 			<label for="ncTitle">Número de serie *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="serialPrepend"><i class="fas fa-key"></i></span>
-  // 				</div>
-  // 				<input type="text" class="form-control" id="npSerial" name="npSerial" placeholder="Número de serie" aria-describedby="serialPrepend" value="" required>
-  // 				<div class="invalid-feedback">El número de serie es obligatorio.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 	</div>`);
-  //   form.append(`<div class="form-row">
-  // 		<div class="col-md-6 mb-3">
-  // 			<label for="ncTitle">Marca *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="brandPrepend"><i class="fas fa-pen-fancy"></i></span>
-  // 				</div>
-  // 				<input type="text" class="form-control" id="npBrand" name="npBrand" placeholder="Marca" aria-describedby="brandPrepend" value="" required>
-  // 				<div class="invalid-feedback">La marca es obligatoria.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 			<div class="col-md-6 mb-3">
-  // 			<label for="ncUrl">Modelo *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="modelPrepend"><i class="fas fa-mobile-alt"></i></span>
-  // 				</div>
-  // 				<input type="text" class="form-control" id="npModel" name="npModel" placeholder="Modelo" aria-describedby="modelPrepend" value="" required>
-  // 				<div class="invalid-feedback">El modelo es obligatorio.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 	</div>`);
-  //   form.append(`<div class="form-row mb-2">
-  // 		* Tipo de producto
-  // 	</div>
-  // 	<div class="form-row" id="cType">
-  // 		<div class="col-md-3 mb-0 input-group">
-  // 			<div class="input-group-prepend">
-  // 				<div class="input-group-text">
-  // 				<input type="radio" name="npType" id="npCameraType" value="Camera" required>
-  // 				</div>
-  // 			</div>
-  // 			<label class="form-control" for="npCameraType">Cámara</label>
-  // 		</div>
-  // 		<div class="col-md-3 mb-0 input-group">
-  // 			<div class="input-group-prepend">
-  // 				<div class="input-group-text">
-  // 				<input type="radio" name="npType" id="npLaptopType" value="Laptop" required>
-  // 				</div>
-  // 			</div>
-  // 			<label class="form-control" for="npLaptopType">Portátil</label>
-  // 		</div>
-  // 		<div class="col-md-3 mb-0 input-group">
-  // 			<div class="input-group-prepend">
-  // 				<div class="input-group-text">
-  // 				<input type="radio" name="npType" id="npTabletType" value="Tablet" required>
-  // 				</div>
-  // 			</div>
-  // 			<label class="form-control" for="npTabletType">Tablet</label>
-  // 		</div>
-  // 		<div class="col-md-3 mb-0 input-group">
-  // 			<div class="input-group-prepend">
-  // 				<div class="input-group-text">
-  // 				<input type="radio" name="npType" id="npSmartphoneType" value="Smartphone" required>
-  // 				</div>
-  // 			</div>
-  // 			<label class="form-control" for="npSmartphoneType">Teléfono móvil</label>
-  // 		</div>
-  // 		<div class="col-md-3 mb-3 mt-1 input-group">
-  // 			<div class="invalid-feedback"><i class="fas fa-times"></i> El tipo de producto es obligatorio.</div>
-  // 			<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>
-  // 		</div>
-  // 	</div>`);
-  //   form.append(`<div class="form-row">
-  // 		<div class="col-md-3 mb-3">
-  // 			<label for="ncTitle">Precio *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="pricePrepend"><i class="fas fa-euro-sign"></i></span>
-  // 				</div>
-  // 				<input type="number" class="form-control" id="npPrice" name="npPrice" min="0" step="10" placeholder="Precio" aria-describedby="pricePrepend" value="" required>
-  // 				<div class="invalid-feedback">El precio es obligatorio.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 		<div class="col-md-3 mb-3">
-  // 			<label for="npTax">Porcentaje de impuestos</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="taxPrepend"><i class="fas fa-percentage"></i></span>
-  // 				</div>
-  // 				<input type="number" class="form-control" id="npTax" name="npTax" min="0" step="1" placeholder="21%" aria-describedby="taxPrepend" value="21" required>
-  // 				<div class="invalid-feedback">Los impuestos son obligatorios.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 		<div class="col-md-6 mb-3">
-  // 			<label for="npUrl">URL *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="urlPrepend"><i class="fas fa-image"></i></span>
-  // 				</div>
-  // 				<input type="url" class="form-control" id="npUrl" name="npUrl" placeholder="http://www.test.es" aria-describedby="urlPrepend" value="" required>
-  // 				<div class="invalid-feedback">La URL no es válida.</div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 	</div>`);
+  showNewStoreModal(done, store, error) {
+    let form = $('#formNewStore');
+    form.find('.error').remove();
+    if (done) {
+      let modal = $(`<div class="modal fade" id="newStoreModal" tabindex="-1"
+				data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newStoreModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="newStoreModalLabel">Tienda creada</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							La tienda <strong>${store.name}</strong> ha sido creada correctamente.
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+						</div>
+					</div>
+				</div>
+			</div>`);
+      $('body').append(modal);
+      let newStoreModal = $('#newStoreModal');
+      newStoreModal.modal('show');
+      newStoreModal.find('button').click(() => {
+        newStoreModal.on('hidden.bs.modal', function (event) {
+          $("#CIF").focus();
+          this.remove();
+        });
+        newStoreModal.modal('hide');
+      })
+    } else {
+      form.prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> La tienda con CIF: <strong>${store.cif}</strong> ya está creada.</div>`);
+    }
+  }
 
-  //   let select = $(`<select class="custom-select" id="npCategories" name="npCategories" aria-describedby="categoryPrepend" required multiple></select>`);
-  //   for (let category of categories) {
-  //     select.append(`<option value="${category.title}">${category.title}</option>`);
-  //   }
-  //   let selectContainer = $(`<div class="form-row">
-  // 		<div class="col-md-3 mb-3">
-  // 			<label for="npCategories">Categorías *</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group mb-3" id="categoriesContainer">
-  // 					<div class="input-group-prepend">
-  // 						<span class="input-group-text" id="categoryPrepend"><i class="fas fa-list-alt"></i></span>
-  // 					</div>
-  // 				</div>
-  // 			</div>
-  // 		</div>
-  // 		<div class="col-md-9 mb-3">
-  // 			<label for="npDescription">Descripción</label>
-  // 			<div class="input-group">
-  // 				<div class="input-group-prepend">
-  // 					<span class="input-group-text" id="descPrepend"><i class="fas fa-align-left"></i></span>
-  // 				</div>
-  // 				<textarea class="form-control" id="npDescription" name="npDescription" aria-describedby="descPrepend" rows="4">
-  // 				</textarea>
-  // 				<div class="invalid-feedback"></div>
-  // 				<div class="valid-feedback">Correcto.</div>
-  // 			</div>
-  // 		</div>
-  // 	</div>`);
-  //   selectContainer.find('#categoriesContainer').first().append(select);
-  //   selectContainer.find('#categoriesContainer').first().append(`<div class="invalid-feedback"><i class="fas fa-times"></i> El tipo de producto es obligatorio.</div>`);
-  //   selectContainer.find('#categoriesContainer').first().append(`<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>`);
-  //   form.append(selectContainer);
-  //   form.append(`<button class="btn btn-primary m-1" type="submit">Enviar</button>`);
-  //   form.append(`<button class="btn btn-primary m-1" type="reset">Cancelar</button>`);
-  //   container.append(form);
-  //   this.main.append(container);
-  // }
+  showRemoveStoreForm(stores) {
+    this.main.empty();
+    let container = $(`
+    <div id="remove-store" class="container my-3">
+			<h1 class="display-5">Eliminar una tienda</h1>
+			<form id="formRemoveStore" class="formRemoveStore">
+        <label for="title">Nombre de la tienda:</label>
+        <select id="selStores">
+          <option></option>
+        </select>
+        <button class="btn btn-primary" type="submit">Eliminar</button>
+      <form>`);
+    this.main.append(container);
 
-  // showNewProductModal(done, product, error) {
-  //   $(document.fNewProduct).find('div.error').remove();
-  //   if (done) {
-  //     let modal = $(`<div class="modal fade" id="newProductModal" tabindex="-1"
-  // 			data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
-  // 			<div class="modal-dialog" role="document">
-  // 				<div class="modal-content">
-  // 					<div class="modal-header">
-  // 						<h5 class="modal-title" id="newCategoryModalLabel">Producto creado</h5>
-  // 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-  // 							<span aria-hidden="true">&times;</span>
-  // 						</button>
-  // 					</div>
-  // 					<div class="modal-body">
-  // 						El producto <strong>${product.brand} - ${product.model}</strong> ha sido creada correctamente.
-  // 					</div>
-  // 					<div class="modal-footer">
-  // 						<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
-  // 					</div>
-  // 				</div>
-  // 			</div>
-  // 		</div>`);
-  //     $('body').append(modal);
-  //     let newProductModal = $('#newProductModal');
-  //     newProductModal.modal('show');
-  //     newProductModal.find('button').click(() => {
-  //       newProductModal.on('hidden.bs.modal', function (event) {
-  //         document.fNewProduct.reset();
-  //         document.fNewProduct.npSerial.focus();
-  //         this.remove();
-  //       });
-  //       newProductModal.modal('hide');
-  //     })
-  //   } else {
-  //     $(document.fNewProduct).prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> El producto <strong>${product.brand} - ${product.model}</strong> no ha podido crearse correctamente.</div>`);
-  //   }
-  // }
+    for (let store of stores) {
+      //Segun el planteamiento dado a esta web donde HouseStore es el alamacen por defecto no se podra eliminar
+      store = store.store;
+      if (store.name != "HouseStore") {
+        $('#selStores').append($('<option />', {
+          text: store.name,
+          value: store.name,
+        }));
+      }
+    }
+  }
+
+  showRemoveStoreModal(done, store, error) {
+    $('#remove-store').find('.error').remove();
+    if (done) {
+      let modal = $(`<div class="modal fade" id="removeStoreModal" tabindex="-1"
+				data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="removeStoreModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="removeStoreModalLabel">Tienda eliminada</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							La tienda <strong>${store.name}</strong> ha sido eliminada correctamente.
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+						</div>
+					</div>
+				</div>
+			</div>`);
+      $('body').append(modal);
+      let removeStoreModal = $('#removeStoreModal');
+      removeStoreModal.modal('show');
+      removeStoreModal.find('button').click(() => {
+        removeStoreModal.on('hidden.bs.modal', function (event) {
+          this.remove();
+        });
+        removeStoreModal.modal('hide');
+      })
+      //Borrar de opciones la categoria borrada
+      $("option[value='" + store.name + "']").remove();
+    } else {
+      $('#remove-store').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>Debes seleccionar una tienda</div>`);
+    }
+  }
+
+  showNewProductForm() {
+    this.main.empty();
+
+    let container = $(`<div id="new-product" class="container my-3">
+  		<h1 class="display-5">Nuevo producto</h1>
+  	</div>`);
+    let form = $(`<form name="formNewProduct" id="formNewProduct" novalidate><form>`);
+    form.append(`<div class="form-row">
+  		<div class="col-md-12 mb-3">
+  			<label for="serialNumber">Número de serie *</label>
+  			<div class="input-group">
+  				<input type="text" class="form-control" id="serialNumber" name="serialNumber" placeholder="Número de serie" aria-describedby="serialNumber" value="" required>
+  				<div class="invalid-feedback">El número de serie es obligatorio.</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  	</div>`);
+    form.append(`
+    <div class="form-row">
+  		<div class="col-md-6 mb-3">
+  			<label for="name">Nombre *</label>
+  			<div class="input-group">
+  				<input type="text" class="form-control" id="name" name="name" placeholder="Nombre" aria-describedby="name" value="" required>
+  				<div class="invalid-feedback">El nombre es obligatorio.</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  		<div class="col-md-6 mb-3">
+  			<label for="description">Descripcion</label>
+  			<div class="input-group">
+  				<input type="text" class="form-control" id="description" name="description" placeholder="Descripción" aria-describedby="description" value="">
+  				<div class="invalid-feedback">Descipción incorrecta</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  	</div>`);
+    form.append(`<div class="form-row">
+  		<div class="col-md-3 mb-3">
+  			<label for="price">Precio *</label>
+  			<div class="input-group">
+  				<input type="number" class="form-control" id="price" name="price" min="0" step="10" placeholder="Precio" aria-describedby="price" value="" required>
+  				<div class="invalid-feedback">El precio es obligatorio.</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  		<div class="col-md-3 mb-3">
+  			<label for="tax">Porcentaje de impuestos</label>
+  			<div class="input-group">
+  				<input type="number" class="form-control" id="tax" name="tax" min="0" step="1" placeholder="21%" aria-describedby="tax" value="21">
+  				<div class="invalid-feedback">Los impuestos introducidos son invalidos</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  		<div class="col-md-6 mb-3">
+  			<label for="images">Nombre Imagen</label>
+  			<div class="input-group">
+  				<input type="text" class="form-control" id="images" name="images" placeholder="i510400F.png" aria-describedby="images" value="">
+  				<div class="invalid-feedback">La imagen no es válida.</div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  	</div>`);
+
+    let select = $(`<select class="custom-select" id="npCategories" name="npCategories" aria-describedby="categoryPrepend" required multiple></select>`);
+    for (let category of categories) {
+      select.append(`<option value="${category.title}">${category.title}</option>`);
+    }
+    let selectContainer = $(`<div class="form-row">
+  		<div class="col-md-3 mb-3">
+  			<label for="npCategories">Categorías *</label>
+  			<div class="input-group">
+  				<div class="input-group mb-3" id="categoriesContainer">
+  					<div class="input-group-prepend">
+  						<span class="input-group-text" id="categoryPrepend"><i class="fas fa-list-alt"></i></span>
+  					</div>
+  				</div>
+  			</div>
+  		</div>
+  		<div class="col-md-9 mb-3">
+  			<label for="npDescription">Descripción</label>
+  			<div class="input-group">
+  				<div class="input-group-prepend">
+  					<span class="input-group-text" id="descPrepend"><i class="fas fa-align-left"></i></span>
+  				</div>
+  				<textarea class="form-control" id="npDescription" name="npDescription" aria-describedby="descPrepend" rows="4">
+  				</textarea>
+  				<div class="invalid-feedback"></div>
+  				<div class="valid-feedback">Correcto.</div>
+  			</div>
+  		</div>
+  	</div>`);
+    selectContainer.find('#categoriesContainer').first().append(select);
+    selectContainer.find('#categoriesContainer').first().append(`<div class="invalid-feedback"><i class="fas fa-times"></i> El tipo de producto es obligatorio.</div>`);
+    selectContainer.find('#categoriesContainer').first().append(`<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>`);
+    form.append(selectContainer);
+    form.append(`<button class="btn btn-primary m-1" type="submit">Enviar</button>`);
+    form.append(`<button class="btn btn-primary m-1" type="reset">Cancelar</button>`);
+    container.append(form);
+    this.main.append(container);
+  }
+
+  showNewProductModal(done, product, error) {
+    $(document.fNewProduct).find('div.error').remove();
+    if (done) {
+      let modal = $(`<div class="modal fade" id="newProductModal" tabindex="-1"
+  			data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+  			<div class="modal-dialog" role="document">
+  				<div class="modal-content">
+  					<div class="modal-header">
+  						<h5 class="modal-title" id="newCategoryModalLabel">Producto creado</h5>
+  						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+  							<span aria-hidden="true">&times;</span>
+  						</button>
+  					</div>
+  					<div class="modal-body">
+  						El producto <strong>${product.brand} - ${product.model}</strong> ha sido creada correctamente.
+  					</div>
+  					<div class="modal-footer">
+  						<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+  					</div>
+  				</div>
+  			</div>
+  		</div>`);
+      $('body').append(modal);
+      let newProductModal = $('#newProductModal');
+      newProductModal.modal('show');
+      newProductModal.find('button').click(() => {
+        newProductModal.on('hidden.bs.modal', function (event) {
+          document.fNewProduct.reset();
+          document.fNewProduct.npSerial.focus();
+          this.remove();
+        });
+        newProductModal.modal('hide');
+      })
+    } else {
+      $(document.fNewProduct).prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> El producto <strong>${product.brand} - ${product.model}</strong> no ha podido crearse correctamente.</div>`);
+    }
+  }
 
 
   // showRemoveProductForm(categories) {
@@ -766,13 +872,15 @@ class StoreHouseView {
     })
   }
 
-  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory) {
+  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore) {
     $('#newCategory').click((event) => {
       this.#excecuteHandler(
         handlerNewCategory,
         [],
         '#new-category',
-        { 'action': 'newCategory' }, '#', event);
+        { action: 'newCategory' },
+        '#new-category',
+        event);
     });
     $('#delCategory').click((event) => {
       this.#excecuteHandler(
@@ -780,7 +888,25 @@ class StoreHouseView {
         [],
         '#remove-category',
         { action: 'removeCategory' },
-        '#',
+        '#remove-category',
+        event);
+    });
+    $('#newStore').click((event) => {
+      this.#excecuteHandler(
+        handlerNewStore,
+        [],
+        '#new-store',
+        { action: 'newStore' },
+        '#new-store',
+        event);
+    });
+    $('#delStore').click((event) => {
+      this.#excecuteHandler(
+        handlerRemoveStore,
+        [],
+        '#remove-store',
+        { action: 'removeStore' },
+        '#remove-store',
         event);
     });
   }
@@ -790,11 +916,25 @@ class StoreHouseView {
   }
 
   bindRemoveCategoryForm(handler) {
-    let form = $(document.getElementById('#formRemoveCategory'));
-    form.submit(function (event) {
-      handler(this.value);
+    let form = $('#formRemoveCategory');
+    form.on('submit', function (event) {
+      //Pasamos el valor de la categoria selecionada el cual es el titulo
+      handler($("#selCategories").val());
     })
   }
+
+  bindNewStoreForm(handler) {
+    newStoreValidation(handler);
+  }
+
+  bindRemoveStoreForm(handler) {
+    let form = $('#formRemoveStore');
+    form.on('submit', function (event) {
+      //Pasamos el valor de la tienda selecionada el cual es el nombre
+      handler($("#selStores").val());
+    })
+  }
+
   //Revisar faltan todos los hadnler validaciones...
   // bindNewProductForm(handler) {
   //   newProductValidation(handler);

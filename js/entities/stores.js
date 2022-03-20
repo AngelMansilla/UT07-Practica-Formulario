@@ -37,8 +37,8 @@ class Store {
     // Considero que el CIF no puede ser vacio igual que el nombre
     if (!CIF) throw new EmptyValueException("CIF");
     if (!name) throw new EmptyValueException("name");
-    // Compruebo que la variable coords es un objeto Coords
-    if (!(coords instanceof Coords)) throw new CoordsStoreException();
+    // Compruebo que la variable coords es un objeto Coords siempre que haya una cordenada dada para el objeto
+    if (coords && !(coords instanceof Coords)) throw new CoordsStoreException();
     this.#CIF = CIF;
     this.#name = name;
     this.#address = address;

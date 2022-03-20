@@ -27,8 +27,9 @@ class Product {
     //Validación de parámetros obligatorios
     if (!serialNumber) throw new EmptyValueException("serialNumber");
     if (!name) throw new EmptyValueException("name");
+    if (!price) throw new EmptyValueException("price");
     price = Number.parseFloat(price);
-    if (!price || price <= 0) throw new InvalidValueException("price", price);
+    if(price <= 0) throw new InvalidValueException("price", price);
 
     // Validamos que el tax sea un valor coherente.
     if (!tax || tax < 0) throw new InvalidValueException("tax", tax);

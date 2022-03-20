@@ -44,7 +44,7 @@ class StoreHouseController {
     this.#storeHouseModel.addCategory(cat2);
     this.#storeHouseModel.addCategory(cat3);
     this.#storeHouseModel.addProduct(p6, [cat3]);
-    this.#storeHouseModel.addProduct(p1, [cat1]);
+    // this.#storeHouseModel.addProduct(p1, [cat1]);
     this.#storeHouseModel.addProduct(p2, [cat2]);
     this.#storeHouseModel.addProduct(p3, [cat3]);
     this.#storeHouseModel.addProduct(p4, [cat1, cat2]);
@@ -85,7 +85,9 @@ class StoreHouseController {
     this.#storeHouseView.showAdministracion();
     this.#storeHouseView.bindAdministracionMenu(
       this.handleNewCategoryForm,
-      this.handleRemoveCategoryForm
+      this.handleRemoveCategoryForm,
+      this.handleNewStoreForm,
+      this.handleRemoveStoreForm
     );
   }
 
@@ -200,19 +202,61 @@ class StoreHouseController {
   }
 
   handleRemoveCategory = (title) => {
-    let done, error, cat;
+    let error, cat;
+    let done = false;
     try {
       cat = this.#storeHouseModel.getCategory(title);
       this.#storeHouseModel.removeCategory(cat);
       done = true;
       this.onAddCategory();
     } catch (exception) {
-      done = false;
       error = exception;
     }
     this.#storeHouseView.showRemoveCategoryModal(done, cat, error);
   }
 
+  handleNewStoreForm = () => {
+    this.#storeHouseView.showNewStoreForm();
+    this.#storeHouseView.bindNewStoreForm(this.handleCreateStore);
+  }
+
+  handleCreateStore = (cif, name, address, phone, latitude, longitude) => {
+    let store = new Store(cif, name);
+    store.address = address;
+    store.phone = phone;
+    // store.coords = new Coords(latitude, longitude);
+    let done = false;
+    let error;
+    try {
+      this.#storeHouseModel.addShop(store);
+      done = true;
+      this.onAddStore();
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showNewStoreModal(done, store, error);
+  }
+
+  handleRemoveStoreForm = () => {
+    this.#storeHouseView.showRemoveStoreForm(this.#storeHouseModel.stores);
+    this.#storeHouseView.bindRemoveStoreForm(this.handleRemoveStore);
+  }
+
+  handleRemoveStore = (name) => {
+    let error, store;
+    let done = false;
+    try {
+      store = this.#storeHouseModel.getStore(name);
+      this.#storeHouseModel.removeShop(store);
+      done = true;
+      this.onAddStore();
+      //Se necesita volver a mostrar el formulario para mantenernos en él y no ir a las tiendas.
+      this.handleRemoveStoreForm();
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showRemoveStoreModal(done, store, error);
+  }
 
 }
 

@@ -13,7 +13,14 @@ const historyActions = {
   productsStoreList: (event) => StoreHouseApp.handleProductsStoreList(event.state.store),
   productsStoreCategoryList: (event) => StoreHouseApp.handleProductsStoreCategoryList(event.state.store, event.state.category),
   productsStoreCategoryTypeList: (event) => StoreHouseApp.handleProductsType(event.state.type, event.state.store, event.state.category),
-  showProduct: (event) => StoreHouseApp.handleShowProduct(event.state.serial)
+  showProduct: (event) => StoreHouseApp.handleShowProduct(event.state.serial),
+  newCategory: (event) => StoreHouseApp.handleNewCategoryForm(),
+  removeCategory: (event) => StoreHouseApp.handleRemoveCategoryForm(),
+  newStore: (event) => StoreHouseApp.handleNewStoreForm(),
+  removeStore: (event) => StoreHouseApp.handleRemoveStoreForm(),
+  newProduct: (event) => StoreHouseApp.handleNewProductForm(),
+  removeProduct: (event) => StoreHouseApp.handleRemoveProductForm(),
+  modStock: (event) => StoreHouseApp.handleModStockForm()
 }
 
 window.addEventListener('popstate', function (event) {

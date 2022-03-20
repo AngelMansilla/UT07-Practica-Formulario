@@ -297,10 +297,20 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         this.#stores.forEach(store => {
           if (store.store.CIF == shop.CIF) {
             store.products.forEach(product => {
-              this.stores[0].products.push(product);
+              let productExists = false;
+              //Comprobamos si existe ya el producto en el almacen por defecto para solo sumarle al stock del producto existente.
+              this.#stores[0].products.forEach(productSH => {
+                if (product.product.serialNumber == productSH.product.serialNumber) {
+                  productExists = true;
+                  productSH.stock += product.stock;
+                }
+              });
+              if (!productExists) {
+                this.#stores[0].products.push(product);
+              }
             });
           }
-        })
+        });
         this.#stores.splice(position, 1);
         return this.#stores.length; // Devolvemos la nueva cantidad de tienda que tenemos
       }
