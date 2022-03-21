@@ -826,7 +826,7 @@ class StoreHouseView {
         });
         modStockModal.modal('hide');
         //Borrar de opciones del producto
-        if(stock===0){
+        if(stock==='0'){
           $("option[value='" + product.product.serialNumber + "']").remove();
         }
       })
