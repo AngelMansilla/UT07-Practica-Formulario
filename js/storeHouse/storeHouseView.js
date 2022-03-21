@@ -773,7 +773,7 @@ class StoreHouseView {
         <div class="col-md-3 mb-3">
   			  <label for="stock">Stock del producto</label>
   			  <div class="input-group">
-  				  <input type="number" class="form-control" id="stock" name="stock" min="0" step="1" aria-describedby="stock" required>
+  				  <input type="number" class="form-control" id="stock" name="stock" min="0" step="1" aria-describedby="stock" value="1" required>
   				  <div class="invalid-feedback">Debes introducir una cantidad de stock</div>
   				  <div class="valid-feedback">Correcto.</div>
   		    </div>
@@ -826,7 +826,9 @@ class StoreHouseView {
         });
         modStockModal.modal('hide');
         //Borrar de opciones del producto
-        $("option[value='" + product.product.serialNumber + "']").remove();
+        if(stock===0){
+          $("option[value='" + product.product.serialNumber + "']").remove();
+        }
       })
     } else {
       $('#mod-stock').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>No se pudo modificar el stock.</div>`);
