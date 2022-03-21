@@ -49,12 +49,12 @@ class StoreHouseController {
     this.#storeHouseModel.addProduct(p3, [cat3]);
     this.#storeHouseModel.addProduct(p4, [cat1, cat2]);
     this.#storeHouseModel.addProduct(p5, [cat2, cat3]);
-    this.#storeHouseModel.addProductInShop(p2, shop1, [cat2]);
-    this.#storeHouseModel.addProductInShop(p1, shop1, [cat1]);
-    this.#storeHouseModel.addProductInShop(p2, shop2, [cat2]);
-    this.#storeHouseModel.addProductInShop(p3, shop3, [cat3]);
-    this.#storeHouseModel.addProductInShop(p4, shop1, [cat1, cat2]);
-    this.#storeHouseModel.addProductInShop(p6, shop2, [cat2, cat3]);
+    this.#storeHouseModel.addProductInShop(p2, shop1, [cat2.title]);
+    this.#storeHouseModel.addProductInShop(p1, shop1, [cat1.title]);
+    this.#storeHouseModel.addProductInShop(p2, shop2, [cat2.title]);
+    this.#storeHouseModel.addProductInShop(p3, shop3, [cat3.title]);
+    this.#storeHouseModel.addProductInShop(p4, shop1, [cat1.title, cat2.title]);
+    this.#storeHouseModel.addProductInShop(p6, shop2, [cat2.title, cat3.title]);
     this.#storeHouseModel.addQuantityProductInShop(p3, shop3, 5);
     this.#storeHouseModel.addQuantityProductInShop(p2, shop1, 7);
     this.#storeHouseModel.addQuantityProductInShop(p2, shop2, 3);
@@ -87,7 +87,8 @@ class StoreHouseController {
       this.handleNewCategoryForm,
       this.handleRemoveCategoryForm,
       this.handleNewStoreForm,
-      this.handleRemoveStoreForm
+      this.handleRemoveStoreForm,
+      this.handleNewProductForm
     );
   }
 
@@ -257,6 +258,52 @@ class StoreHouseController {
     }
     this.#storeHouseView.showRemoveStoreModal(done, store, error);
   }
+
+  handleNewProductForm = () => {
+    this.#storeHouseView.showNewProductForm(this.#storeHouseModel.categories,this.#storeHouseModel.stores);
+    this.#storeHouseView.bindNewProductForm(this.handleCreateProduct);
+  }
+
+  handleCreateProduct = (serialNumber, name, description, type, price, tax, images, categories, storeName) => {
+    let instance = {
+      Processor: Processor,
+      Graphic_Card: Graphic_Card,
+      RAM: RAM,
+    }
+
+    let done = false;
+    let error, product, store;
+    try {
+      store = this.#storeHouseModel.getStore(storeName);
+      product = new instance[type](serialNumber, name, "", price);
+      product.description = description;
+      product.tax = tax;
+      product.images = images;
+      this.#storeHouseModel.addProductInShop(product, store, categories);
+      done = true;
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showNewProductModal(done, product, error);
+  }
+
+  handleRemoveProductForm = () => {
+    this.#storeHouseView.bindRemoveProductForm(this.handleRemoveProduct);
+  }
+
+  handleRemoveProduct = (serialNumber) => {
+    let error, product;
+    let done = false;
+    try {
+      product = this.#storeHouseModel.getProduct(serialNumber);
+      this.#storeHouseModel.removeProduct(product);
+      done = true;
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showRemoveProductModal(done, product, error);
+  }
+
 
 }
 

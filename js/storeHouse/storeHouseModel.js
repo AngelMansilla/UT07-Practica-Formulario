@@ -193,7 +193,7 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         this.#stores.forEach(store => {
           store.products.forEach(product => {
             //Para cada producto comprobamos si tiene solo 1 categoría y si es la que vamos a eliminar para asignarle la default
-            if ((product.categories.length === 1) && (product.categories[0].title === category.title)) {
+            if ((product.categories.length === 1) && (product.categories[0] === category.title)) {
               product.categories.push(new Category); // Añadimos categoria por defecto ya que eliminaremos la que tiene, así tendremos la categoría por defecto
             }
           })
@@ -215,26 +215,31 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         this.#stores[0].products.push({ product: product, categories: categories, stock: 1 }); // Añadimos 1 por defectoo
         return this.#stores[0].products.length;
       }
-      // Elimina un producto de la tienda por defecto.
+      // Elimina un producto de todas las tiendas
       removeProduct(product) {
-        let position = this.getProductPosition(product);
-        if (position === -1) throw new NotExistException(product); // El producto no existe
-        this.#stores[0].products.splice(position, 1);
-        return this.#stores[0].products.length;
+        let delProduct = 0;
+        this.#stores.forEach(store => {
+          let position = this.getProductPosition(product, store.store);
+          if (position !== -1) {
+            store.products.splice(position, 1);
+            delProduct += 1;
+          }
+        });
+        // Si es igual a 0 significa que el producto no existe y no se borro nada
+        if (delProduct == 0) throw new ExistException(product);
+        return delProduct;
       }
       // Añade un Product en una tienda con un nº de unidades.
       // En este metodo añadire productos no existentes en una tienda, así el metodo addQuantityProductInShop lo usaremos para añadir sotck en un producto existente en una tienda.
       // También añado la opcion de agregar un array de categorias del producto.
-      addProductInShop(product, shop, category = [this.#categories[0]]) {
+      addProductInShop(product, shop, categories = [this.#categories[0]]) {
         if (!product) throw new EmptyValueException("product"); // product no es null
         // Voy a quitar la excepcion de shop no existe.
         // Es mas util el metodo si podemos añadir productos diferentes a una misma tienda. Siendo poco eficiente tener los productos seprados de una misma tienda.
         if (this.getProductPosition(product, shop) !== -1) throw new ExistException(product); // A la vez que comprobamos si existe el producto comprobamos si existe la tienda
         //Comprobamos cada categoria si existe
-        let categories = [];
-        category.forEach(cat => {
-          if (this.getCategoryPositionByName(cat.title) === -1) throw new NotExistException(cat.title); // Comprobamos que exista la categoría
-          categories.push(cat.title); // Aprovechando el bucle para la excepcion, guardamos solo el nombre de la categoria como clave
+        categories.forEach(cat => {
+          if (this.getCategoryPositionByName(cat) === -1) throw new NotExistException(cat); // Comprobamos que exista la categoría
         });
         this.#stores[this.getStorePosition(shop)].products.push({ product: product, categories: categories, stock: 1 });
         return this.#stores.length; // Devolvemos el tamaño del array tiendas

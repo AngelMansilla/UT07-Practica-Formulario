@@ -1,6 +1,6 @@
 "use strict";
 import StoreHouse from './storeHouseModel.js';
-import { showFeedBack, defaultCheckElement, newCategoryValidation, newStoreValidation } from './validation.js';
+import { showFeedBack, defaultCheckElement, newCategoryValidation, newStoreValidation, newProductValidation } from './validation.js';
 
 
 class StoreHouseView {
@@ -492,7 +492,7 @@ class StoreHouseView {
     }
   }
 
-  showNewProductForm() {
+  showNewProductForm(categories, stores) {
     this.main.empty();
 
     let container = $(`<div id="new-product" class="container my-3">
@@ -528,11 +528,44 @@ class StoreHouseView {
   			</div>
   		</div>
   	</div>`);
+    form.append(`<div class="form-row mb-2">
+			* Tipo de producto
+		</div>
+		<div class="form-row" id="cType">
+			<div class="col-md-3 mb-0 input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+					<input type="radio" name="type" id="processorType" value="Processor" required>
+					</div>
+				</div>
+				<label class="form-control" for="processorType">Procesador</label>
+			</div>
+			<div class="col-md-3 mb-0 input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+					<input type="radio" name="type" id="graphic_CardType" value="Graphic_Card" required>
+					</div>
+				</div>
+				<label class="form-control" for="graphic_CardType">Tarjeta Gráfica</label>
+			</div>
+			<div class="col-md-3 mb-0 input-group">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+					<input type="radio" name="type" id="ramType" value="RAM" required>
+					</div>
+				</div>
+				<label class="form-control" for="ramType">Memoria RAM</label>
+			</div>
+			<div class="col-md-3 mb-3 mt-1 input-group">
+				<div class="invalid-feedback"><i class="fas fa-times"></i> El tipo de producto es obligatorio.</div>
+				<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>
+			</div>
+		</div>`);
     form.append(`<div class="form-row">
   		<div class="col-md-3 mb-3">
   			<label for="price">Precio *</label>
   			<div class="input-group">
-  				<input type="number" class="form-control" id="price" name="price" min="0" step="10" placeholder="Precio" aria-describedby="price" value="" required>
+  				<input type="number" class="form-control" id="price" name="price" min="0" step='0.01' placeholder="Precio" aria-describedby="price" value="" required>
   				<div class="invalid-feedback">El precio es obligatorio.</div>
   				<div class="valid-feedback">Correcto.</div>
   			</div>
@@ -555,59 +588,60 @@ class StoreHouseView {
   		</div>
   	</div>`);
 
-    let select = $(`<select class="custom-select" id="npCategories" name="npCategories" aria-describedby="categoryPrepend" required multiple></select>`);
+    let selectCat = $(`<select class="custom-select" id="fCategories" name="fCategories" aria-describedby="fCategories" multiple></select>`);
     for (let category of categories) {
-      select.append(`<option value="${category.title}">${category.title}</option>`);
+      selectCat.append(`<option value="${category.title}">${category.title}</option>`);
+    }
+    let selectStores = $(`<select class="select" id="fStore" name="fStore" aria-describedby="fStore" requiered></select>`);
+    for (let store of stores) {
+      store = store.store;
+      selectStores.append(`<option value="${store.name}">${store.name}</option>`);
     }
     let selectContainer = $(`<div class="form-row">
   		<div class="col-md-3 mb-3">
-  			<label for="npCategories">Categorías *</label>
+  			<label for="fCategories">Categorías</label>
   			<div class="input-group">
   				<div class="input-group mb-3" id="categoriesContainer">
-  					<div class="input-group-prepend">
-  						<span class="input-group-text" id="categoryPrepend"><i class="fas fa-list-alt"></i></span>
-  					</div>
   				</div>
   			</div>
   		</div>
-  		<div class="col-md-9 mb-3">
-  			<label for="npDescription">Descripción</label>
+  		<div class="col-md-3 mb-3">
+  			<label for="fStore">Tiendas*</label>
   			<div class="input-group">
-  				<div class="input-group-prepend">
-  					<span class="input-group-text" id="descPrepend"><i class="fas fa-align-left"></i></span>
+  				<div class="input-group mb-3" id="storesContainer">
   				</div>
-  				<textarea class="form-control" id="npDescription" name="npDescription" aria-describedby="descPrepend" rows="4">
-  				</textarea>
-  				<div class="invalid-feedback"></div>
-  				<div class="valid-feedback">Correcto.</div>
   			</div>
   		</div>
   	</div>`);
-    selectContainer.find('#categoriesContainer').first().append(select);
-    selectContainer.find('#categoriesContainer').first().append(`<div class="invalid-feedback"><i class="fas fa-times"></i> El tipo de producto es obligatorio.</div>`);
+    selectContainer.find('#categoriesContainer').first().append(selectCat);
+    selectContainer.find('#categoriesContainer').first().append(`<div class="invalid-feedback"><i class="fas fa-times"></i> Categorias invalidas.</div>`);
     selectContainer.find('#categoriesContainer').first().append(`<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>`);
+    selectContainer.find('#storesContainer').first().append(selectStores);
+    selectContainer.find('#storesContainer').first().append(`<div class="invalid-feedback"><i class="fas fa-times"></i> La tienda del producto es obligatorio.</div>`);
+    selectContainer.find('#storesContainer').first().append(`<div class="valid-feedback"><i class="fas fa-check"></i> Correcto.</div>`);
     form.append(selectContainer);
     form.append(`<button class="btn btn-primary m-1" type="submit">Enviar</button>`);
-    form.append(`<button class="btn btn-primary m-1" type="reset">Cancelar</button>`);
+    form.append(`<button class="btn btn-primary m-1" type="reset" id="reset">Resetear</button>`);
     container.append(form);
     this.main.append(container);
   }
 
   showNewProductModal(done, product, error) {
-    $(document.fNewProduct).find('div.error').remove();
+    let form = $('#formNewProduct');
+    form.find('.error').remove();
     if (done) {
       let modal = $(`<div class="modal fade" id="newProductModal" tabindex="-1"
-  			data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+  			data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="newProductModalLabel" aria-hidden="true">
   			<div class="modal-dialog" role="document">
   				<div class="modal-content">
   					<div class="modal-header">
-  						<h5 class="modal-title" id="newCategoryModalLabel">Producto creado</h5>
+  						<h5 class="modal-title" id="newProductModalLabel">Producto creado</h5>
   						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
   							<span aria-hidden="true">&times;</span>
   						</button>
   					</div>
   					<div class="modal-body">
-  						El producto <strong>${product.brand} - ${product.model}</strong> ha sido creada correctamente.
+  						El producto <strong>${product.name}</strong> ha sido creado correctamente.
   					</div>
   					<div class="modal-footer">
   						<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
@@ -620,135 +654,17 @@ class StoreHouseView {
       newProductModal.modal('show');
       newProductModal.find('button').click(() => {
         newProductModal.on('hidden.bs.modal', function (event) {
-          document.fNewProduct.reset();
-          document.fNewProduct.npSerial.focus();
+          form.serial.focus();
           this.remove();
         });
         newProductModal.modal('hide');
       })
     } else {
-      $(document.fNewProduct).prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> El producto <strong>${product.brand} - ${product.model}</strong> no ha podido crearse correctamente.</div>`);
+      form.prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> El producto <strong>${product.name} </strong> no ha podido crearse correctamente.</div>`);
     }
   }
 
 
-  // showRemoveProductForm(categories) {
-  //   this.main.empty();
-  //   if (this.categories.children().length > 1)
-  //     this.categories.children()[1].remove();
-  //   let container = $(`<div id="remove-product" class="container my-3">
-  // 		<h1 class="display-5">Eliminar un producto</h1>
-  // 			<div class="form-row">
-  // 				<div class="col-md-6 mb-3">
-  // 					<label for="ncTitle">Tipos de productos</label>
-  // 					<div class="input-group">
-  // 						<div class="input-group-prepend">
-  // 							<span class="input-group-text" id="typePrepend"><i class="fas fa-list-alt"></i></span>
-  // 						</div>
-  // 						<select class="custom-select" id="rpType" name="rpType" aria-describedby="typePrepend">
-  // 							<option disabled selected>Selecciona un tipo</option>
-  // 							<option value="Camera">Cámara</option>
-  // 							<option value="Laptop">Portátil</option>
-  // 							<option value="Tablet">Tablet</option>
-  // 							<option value="Smartphone">Teléfono móvil</option>
-  // 						</select>
-  // 					</div>
-  // 				</div>
-  // 				<div class="col-md-6 mb-3">
-  // 					<label for="ncUrl">Categorías</label>
-  // 					<div class="input-group">
-  // 						<div class="input-group-prepend">
-  // 							<span class="input-group-text" id="categoryPrepend"><i
-  // 									class="fas fa-list-alt"></i></span>
-  // 						</div>
-  // 						<select class="custom-select" id="rpCategories" name="rpCategories" aria-describedby="categoryPrepend">
-  // 							<option disabled selected>Selecciona una categoría</option>
-  // 						</select>
-  // 					</div>
-  // 				</div>
-  // 			</div>
-  // 			<div id="product-list" class="container my-3"><div class="row"></div></div>
-  // 	</div>`);
-
-  //   let categoriesSelect = container.find('#rpCategories');
-  //   for (let category of categories) {
-  //     categoriesSelect.append(`<option value="${category.title}">${category.title}</option>`);
-  //   }
-  //   this.categories.append(container);
-
-  //   this.main.append(container);
-  // }
-
-
-
-  // showRemoveProductList(products) {
-  //   let listContainer = $('#product-list div.row');
-  //   listContainer.empty();
-
-  //   let exist = false;
-  //   for (let product of products) {
-  //     exist = true;
-  //     let div = $(`<div class="col-md-4 rProduct">
-  // 			<figure class="card card-product-grid card-lg"> <a data-serial="${product.serial}" href="#single-product" class="img-wrap"><img class="${product.constructor.name}-style" src="${product.url}"></a>
-  // 				<figcaption class="info-wrap">
-  // 					<div class="row">
-  // 						<div class="col-md-8"> <a data-serial="${product.serial}" href="#single-product" class="title">${product.brand} - ${product.model}</a> </div>
-  // 						<div class="col-md-4">
-  // 							<div class="rating text-right"> <i class="fa fa-star"></i> <i class="fa fa-star"></i> <i class="fa fa-star"></i> </div>
-  // 						</div>
-  // 					</div>
-  // 				</figcaption>
-  // 				<div class="bottom-wrap"> <a href="#" data-serial="${product.serial}" class="btn btn-primary float-right"> Eliminar </a>
-  // 					<div class="price-wrap"> <span class="price h5">${product.price.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</span> <br> <small class="text-success">Free shipping</small> </div>
-  // 				</div>
-  // 			</figure>
-  // 		</div>`);
-  //     listContainer.append(div);
-  //   }
-  //   if (!exist) {
-  //     listContainer.append($('<p class="text-danger"><i class="fas fa-exclamation-circle"></i> No existen productos para esta categoría o tipo.</p>'));
-  //   }
-  // }
-
-
-  // showRemoveProductModal(done, product, position, error) {
-  //   $('#remove-product').find('div.error').remove();
-  //   if (done) {
-  //     let modal = $(`<div class="modal fade" id="removeProductModal" tabindex="-1"
-  // 			data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="removeProductModalLabel" aria-hidden="true">
-  // 			<div class="modal-dialog" role="document">
-  // 				<div class="modal-content">
-  // 					<div class="modal-header">
-  // 						<h5 class="modal-title" id="removeProductModalLabel">Producto eliminado</h5>
-  // 						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-  // 							<span aria-hidden="true">&times;</span>
-  // 						</button>
-  // 					</div>
-  // 					<div class="modal-body">
-  // 						El producto <strong>${product.brand} - ${product.model}</strong> ha sido eliminado correctamente.
-  // 					</div>
-  // 					<div class="modal-footer">
-  // 						<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
-  // 					</div>
-  // 				</div>
-  // 			</div>
-  // 		</div>`);
-  //     $('body').append(modal);
-  //     let removeCategoryModal = $('#removeProductModal');
-  //     removeCategoryModal.modal('show');
-  //     removeCategoryModal.find('button').click(() => {
-  //       removeCategoryModal.on('hidden.bs.modal', function (event) {
-  //         this.remove();
-  //       });
-  //       removeCategoryModal.modal('hide');
-  //       position++;
-  //       let divCat = $('#product-list').find(`div.rProduct:nth-child(${position})`);
-  //       divCat.remove();
-  //     })
-  //   } else {
-  //     $('#remove-product').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i> El producto no exite en el Manager.</div>`);
-  //   }
-  // }
 
 
 
@@ -872,7 +788,7 @@ class StoreHouseView {
     })
   }
 
-  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore) {
+  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore,handlerNewProduct) {
     $('#newCategory').click((event) => {
       this.#excecuteHandler(
         handlerNewCategory,
@@ -909,6 +825,24 @@ class StoreHouseView {
         '#remove-store',
         event);
     });
+    $('#newProduct').click((event) => {
+      this.#excecuteHandler(
+        handlerNewProduct,
+        [],
+        '#new-product',
+        { action: 'newProduct' },
+        '#new-product',
+        event);
+    });
+    $('#delProduct').click((event) => {
+      this.#excecuteHandler(
+        handlerRemoveProduct,
+        [],
+        '#remove-product',
+        { action: 'removeProduct' },
+        '#remove-product',
+        event);
+    });
   }
 
   bindNewCategoryForm(handler) {
@@ -935,38 +869,17 @@ class StoreHouseView {
     })
   }
 
-  //Revisar faltan todos los hadnler validaciones...
-  // bindNewProductForm(handler) {
-  //   newProductValidation(handler);
-  // }
+  bindNewProductForm(handler) {
+    newProductValidation(handler);
+  }
 
-  // bindRemoveProductSelects(handlerTypes, handlerCategories) {
-  //   $('#rpType').change((event) => {
-  //     this.#excecuteHandler(
-  //       handlerTypes,
-  //       [event.target.value],
-  //       '#remove-product',
-  //       { action: 'removeProductByType', type: event.target.value },
-  //       '#remove-product', event
-  //     );
-  //   });
-  //   $('#rpCategories').change((event) => {
-  //     this.#excecuteHandler(
-  //       handlerCategories,
-  //       [event.target.value],
-  //       '#remove-product',
-  //       { action: 'removeProductByCategory', category: event.target.value },
-  //       '#remove-product', event
-  //     );
-  //   });
-  // }
-
-  // bindRemoveProduct(handler) {
-  //   $('#product-list a.btn').click(function (event) {
-  //     handler(this.dataset.serial, $(this).closest('div.rProduct').index());
-  //     event.preventDefault();
-  //   });
-  // }
+  bindRemoveProductForm(handler) {
+    let form = $('#formRemoveProduct');
+    form.on('submit', function (event) {
+      //Pasamos el valor de la tienda selecionada el cual es el nombre
+      handler($("#selProducts").val());
+    })
+  }
 
   #instance = {
     Processor: this.#ProcessorCharacteristics,
@@ -982,12 +895,6 @@ class StoreHouseView {
   #RAMCharacteristics(product) {
     return $('<div>Características de memoria RAM</div>');
   }
-
-
-
-
-
-
 }
 
 export default StoreHouseView;
