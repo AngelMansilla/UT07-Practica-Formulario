@@ -88,7 +88,8 @@ class StoreHouseController {
       this.handleRemoveCategoryForm,
       this.handleNewStoreForm,
       this.handleRemoveStoreForm,
-      this.handleNewProductForm
+      this.handleNewProductForm,
+      this.handleRemoveProductForm
     );
   }
 
@@ -260,7 +261,7 @@ class StoreHouseController {
   }
 
   handleNewProductForm = () => {
-    this.#storeHouseView.showNewProductForm(this.#storeHouseModel.categories,this.#storeHouseModel.stores);
+    this.#storeHouseView.showNewProductForm(this.#storeHouseModel.categories, this.#storeHouseModel.stores);
     this.#storeHouseView.bindNewProductForm(this.handleCreateProduct);
   }
 
@@ -288,6 +289,8 @@ class StoreHouseController {
   }
 
   handleRemoveProductForm = () => {
+    let products = this.#storeHouseModel.getAllProducts();
+    this.#storeHouseView.showRemoveProductForm(products);
     this.#storeHouseView.bindRemoveProductForm(this.handleRemoveProduct);
   }
 
@@ -296,7 +299,7 @@ class StoreHouseController {
     let done = false;
     try {
       product = this.#storeHouseModel.getProduct(serialNumber);
-      this.#storeHouseModel.removeProduct(product);
+      this.#storeHouseModel.removeProduct(product.product);
       done = true;
     } catch (exception) {
       error = exception;

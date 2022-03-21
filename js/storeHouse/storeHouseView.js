@@ -664,9 +664,66 @@ class StoreHouseView {
     }
   }
 
+  showRemoveProductForm(products) {
+    this.main.empty();
+    let container = $(`
+    <div id="remove-product" class="container my-3">
+			<h1 class="display-5">Eliminar un producto</h1>
+			<form id="formRemoveProduct" class="formRemoveProduct">
+        <label for="selProducts">Nombre del producto:</label>
+        <select id="selProducts">
+          <option></option>
+        </select>
+        <button class="btn btn-primary" type="submit">Eliminar</button>
+      <form>`);
+    this.main.append(container);
 
+    for (let product of products) {
+      product = product.product;
+        $('#selProducts').append($('<option />', {
+          text: product.name,
+          value: product.serialNumber,
+        }));
+    }
+  }
 
-
+  showRemoveProductModal(done, product, error) {
+    $('#remove-product').find('.error').remove();
+    if (done) {
+      let modal = $(`<div class="modal fade" id="removeProductModal" tabindex="-1"
+				data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="removeProductModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="removeProductModalLabel">Producto eliminada</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							El producto <strong>${product.product.name}</strong> ha sido eliminada correctamente.
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+						</div>
+					</div>
+				</div>
+			</div>`);
+      $('body').append(modal);
+      let removeProductModal = $('#removeProductModal');
+      removeProductModal.modal('show');
+      removeProductModal.find('button').click(() => {
+        removeProductModal.on('hidden.bs.modal', function (event) {
+          this.remove();
+        });
+        removeProductModal.modal('hide');
+      })
+      //Borrar de opciones la categoria borrada
+      $("option[value='" + product.product.serialNumber + "']").remove();
+    } else {
+      $('#remove-product').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>Debes seleccionar un producto</div>`);
+    }
+  }
 
   bindInit(handler) {
     $('#init').click((event) => {
@@ -788,7 +845,7 @@ class StoreHouseView {
     })
   }
 
-  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore,handlerNewProduct) {
+  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore, handlerNewProduct, handlerRemoveProduct) {
     $('#newCategory').click((event) => {
       this.#excecuteHandler(
         handlerNewCategory,

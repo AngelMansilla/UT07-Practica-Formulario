@@ -389,6 +389,25 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         }
       }
 
+      // Devuelve todos los productos
+      getAllProducts() {
+        let array = []
+
+        this.#stores.forEach(store => {
+          store.products.forEach(product => {
+            array.push(product);
+          });
+        })
+
+        return {
+          *[Symbol.iterator]() {
+            for (let product of array) {
+              yield product;
+            }
+          }
+        }
+      }
+
     }
     Object.defineProperty(StoreHouse.prototype, "name", { enumerable: true });
     Object.defineProperty(StoreHouse.prototype, "categories", { enumerable: true });
