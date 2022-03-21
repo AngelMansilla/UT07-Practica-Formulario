@@ -680,10 +680,10 @@ class StoreHouseView {
 
     for (let product of products) {
       product = product.product;
-        $('#selProducts').append($('<option />', {
-          text: product.name,
-          value: product.serialNumber,
-        }));
+      $('#selProducts').append($('<option />', {
+        text: product.name,
+        value: product.serialNumber,
+      }));
     }
   }
 
@@ -718,10 +718,118 @@ class StoreHouseView {
         });
         removeProductModal.modal('hide');
       })
-      //Borrar de opciones la categoria borrada
+      //Borrar de opciones del producto borrado
       $("option[value='" + product.product.serialNumber + "']").remove();
     } else {
       $('#remove-product').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>Debes seleccionar un producto</div>`);
+    }
+  }
+
+  showModStockForm(stores) {
+    this.main.empty();
+    let container = $(`
+    <div id="mod-stock" class="container my-3">
+			<h1 class="display-5">Modificar stock de un producto</h1>
+			<form id="formModStock" class="formModStock">
+				<div class="form-row">
+					<div class="col-md-6 mb-3">
+						<label for="msStore">Tiendas</label>
+						<div class="input-group">
+							<select class="select" id="msStore" name="msStore" aria-describedby="msStore">
+								<option disabled selected>Selecciona una tienda</option>
+							</select>
+						</div>
+					</div>
+				</div>
+				<div id="product-list" class="container my-3"><div class="row"></div></div>
+      </form>
+		</div>`);
+
+    let storesSelect = container.find('#msStore');
+    for (let store of stores) {
+      storesSelect.append(`<option value="${store.store.name}">${store.store.name}</option>`);
+    }
+    this.main.append(container);
+  }
+
+
+  showModStockList(products) {
+    let listContainer = $('#product-list div.row');
+    let modificar = $('button');
+    modificar.remove();
+    let form = $('#formModStock');
+    listContainer.empty();
+    let container = $(`
+    <div id="mod-stock" class="container my-3">
+			<div class="form-row">
+				<div class="col-md-6 mb-3">
+					<label for="product">Productos</label>
+					<div class="input-group">
+						<select class="select" id="product" name="product" aria-describedby="product" required>
+							<option value="" disabled selected>Selecciona un producto</option>
+						</select>
+					</div>
+				</div>
+        <div class="col-md-3 mb-3">
+  			  <label for="stock">Stock del producto</label>
+  			  <div class="input-group">
+  				  <input type="number" class="form-control" id="stock" name="stock" min="0" step="1" aria-describedby="stock" required>
+  				  <div class="invalid-feedback">Debes introducir una cantidad de stock</div>
+  				  <div class="valid-feedback">Correcto.</div>
+  		    </div>
+        </div>
+			</div>
+		</div>`);
+    let exist = false;
+    let productSelect = container.find('#product');
+    for (let product of products) {
+      exist = true;
+      productSelect.append(`<option value="${product.product.serialNumber}">${product.product.name}</option>`);
+    }
+    if (!exist) {
+      listContainer.append($('<p class="text-danger"><i class="fas fa-exclamation-circle"></i> No existen productos para esta tienda.</p>'));
+    } else {
+      listContainer.append(container);
+      form.append('<button class="btn btn-primary" type="submit" id="modificar">Modificar</button>');
+    }
+  }
+
+  showModStockModal(done, store, product, stock, error) {
+    $('#mod-stock').find('.error').remove();
+    if (done) {
+      let modal = $(`
+      <div class="modal fade" id="modStockModal" tabindex="-1"
+				data-backdrop="static" data-keyboard="false" role="dialog" aria-labelledby="modStockModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="modStockModalLabel">Stock Modificado</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							El stock del producto <strong>`+product.product.name+` de la tienda `+store.name+`</strong> ha sido modificado correctamente a <strong>`+stock+`</strong>.
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-dismiss="modal">Aceptar</button>
+						</div>
+					</div>
+				</div>
+			</div>`);
+      $('body').append(modal);
+      let modStockModal = $('#modStockModal');
+      modStockModal.modal('show');
+      modStockModal.find('button').click(() => {
+        modStockModal.on('hidden.bs.modal', function (event) {
+          this.remove();
+        });
+        modStockModal.modal('hide');
+        //Borrar de opciones del producto
+        $("option[value='" + product.product.serialNumber + "']").remove();
+      })
+    } else {
+      $('#mod-stock').prepend(`<div class="error text-danger p-3"><i class="fas fa-exclamation-triangle"></i>No se pudo modificar el stock.</div>`);
     }
   }
 
@@ -845,7 +953,7 @@ class StoreHouseView {
     })
   }
 
-  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore, handlerNewProduct, handlerRemoveProduct) {
+  bindAdministracionMenu(handlerNewCategory, handlerRemoveCategory, handlerNewStore, handlerRemoveStore, handlerNewProduct, handlerRemoveProduct, handlerModStock) {
     $('#newCategory').click((event) => {
       this.#excecuteHandler(
         handlerNewCategory,
@@ -900,6 +1008,15 @@ class StoreHouseView {
         '#remove-product',
         event);
     });
+    $('#modStock').click((event) => {
+      this.#excecuteHandler(
+        handlerModStock,
+        [],
+        '#mod-stock',
+        { action: 'modStock' },
+        '#mod-stock',
+        event);
+    });
   }
 
   bindNewCategoryForm(handler) {
@@ -936,6 +1053,25 @@ class StoreHouseView {
       //Pasamos el valor de la tienda selecionada el cual es el nombre
       handler($("#selProducts").val());
     })
+  }
+
+  bindModStockSelects(handler) {
+    $('#msStore').change((event) => {
+      this.#excecuteHandler(
+        handler,
+        [event.target.value],
+        '#mod-stock',
+        { action: 'modStock', store: event.target.value },
+        '#mod-stock', event
+      );
+    });
+  }
+
+  bindModStock(handler) {
+    $('#modificar').click(function (event) {
+      handler($('#msStore').val(), $('#product').val(), $('#stock').val());
+      event.preventDefault();
+    });
   }
 
   #instance = {

@@ -89,7 +89,8 @@ class StoreHouseController {
       this.handleNewStoreForm,
       this.handleRemoveStoreForm,
       this.handleNewProductForm,
-      this.handleRemoveProductForm
+      this.handleRemoveProductForm,
+      this.handleModStockForm
     );
   }
 
@@ -307,7 +308,34 @@ class StoreHouseController {
     this.#storeHouseView.showRemoveProductModal(done, product, error);
   }
 
+  handleModStockForm = () => {
+    this.#storeHouseView.showModStockForm(this.#storeHouseModel.stores);
+    this.#storeHouseView.bindModStockSelects(this.handleModStockSelects);
+  }
 
+  handleModStockSelects = (nameStore) => {
+    let store = this.#storeHouseModel.getStore(nameStore);
+    this.#storeHouseView.showModStockList(this.#storeHouseModel.getShopProducts(store));
+    this.#storeHouseView.bindModStock(this.handleModStock);
+  }
+
+  handleModStock = (storeName, productSerial, stock) => {
+    let done = false;
+    let error;
+    let store = this.#storeHouseModel.getStore(storeName);
+    let product = this.#storeHouseModel.getProductStore(productSerial,store);
+    try {
+      if (stock > 0) {
+        this.#storeHouseModel.addQuantityProductInShop(product.product, store, parseInt(stock));
+      } else {
+        this.#storeHouseModel.removeProductInShop(product.product, store);
+      }
+      done = true;
+    } catch (exception) {
+      error = exception;
+    }
+    this.#storeHouseView.showModStockModal(done, store, product, stock, error);
+  }
 }
 
 export default StoreHouseController;

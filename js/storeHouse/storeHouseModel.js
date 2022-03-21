@@ -146,6 +146,18 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         return producSelect;
       }
 
+      //Devolvemos un producto por el SerialNumber y la tienda
+      getProductStore(serial, store) {
+        let producSelect;
+        this.#stores[this.getStorePosition(store)].products.forEach(product => {
+            if ((product.product.serialNumber == serial)) {
+              producSelect = product;
+            }
+          });
+        if (!producSelect) throw new NotExistException(serial);
+        return producSelect;
+      }
+
       //Dado una categoria, devuelve la posición de esa categoria o -1 si no la encontramos.
       getCategoryPosition(category) {
         // Como comprobamos que la categoria sea un obejto Category no hace falta en el add y remove
@@ -253,11 +265,11 @@ let StoreHouse = (function () { //La función anónima devuelve un método getIn
         this.#stores[this.getStorePosition(shop)].products.splice(position, 1);
         return this.#stores[this.getStorePosition(shop)].products.length;
       }
-      // Dado un Product y un Shop, se suman la cantidad de elementos al stock de esa tienda. Por defecto 1.
+      // Dado un Product y un Shop, se asigna la cantidad  al stock de esa tienda. Por defecto 1.
       addQuantityProductInShop(product, shop, stock = 1) {
         if (this.getProductPosition(product, shop) === -1) throw new NotExistException(product); // A la vez que comprobamos si existe el producto comprobamos si existe la tienda
         if (!Number.isInteger(stock) || stock < 1) throw new InvalidValueException("stock", stock);
-        this.#stores[this.getStorePosition(shop)].products[this.getProductPosition(product, shop)].stock += stock;
+        this.#stores[this.getStorePosition(shop)].products[this.getProductPosition(product, shop)].stock = stock;
         return this.#stores[this.getStorePosition(shop)].products[this.getProductPosition(product, shop)].stock;
       }
       // Devuelve la relación de todos los productos añadidos en una categoría con sus cantidades en stock. Si pasamos un tipo de producto, el resultado estará filtrado por ese tipo.
